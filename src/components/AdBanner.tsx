@@ -1,46 +1,45 @@
 'use client';
-
-import { useEffect } from 'react';
-
-declare global {
-  interface Window {
-    adsbygoogle?: unknown[];
-  }
-}
+import { useEffect, useRef } from 'react';
 
 export default function AdBanner() {
-  const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
-  const slotId = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ID;
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (clientId && slotId) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch {
-        // Ignore duplicate push errors
-      }
-    }
-  }, [clientId, slotId]);
+    if (!bannerRef.current) return;
+
+    // Reset container to avoid duplicate scripts on client navigation
+    const container = bannerRef.current;
+    container.innerHTML = '';
+
+    const confScript = document.createElement('script');
+    confScript.type = 'text/javascript';
+    confScript.innerHTML = `
+      atOptions = {
+        'key' : '75660084edbcf45797884b6da8d8d179',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+      };
+    `;
+
+    const invokeScript = document.createElement('script');
+    invokeScript.type = 'text/javascript';
+    invokeScript.src = 'https://bicea.org/22/75660084edbcf45797884b6da8d8d179';
+    invokeScript.async = true;
+
+    container.appendChild(confScript);
+    container.appendChild(invokeScript);
+  }, []);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#000000]/95 backdrop-blur border-t border-white/5">
-      <div className="max-w-3xl mx-auto px-4 py-2 flex items-center justify-center">
-        {clientId && slotId ? (
-          /* Live Google AdSense 320x50 Ad Unit */
-          <ins
-            className="adsbygoogle"
-            style={{ display: 'inline-block', width: '320px', height: '50px' }}
-            data-ad-client={clientId}
-            data-ad-slot={slotId}
-          />
-        ) : (
-          /* Sleek Minimalist AdSense Placeholder */
-          <div className="w-full max-w-[320px] h-[50px] bg-[#1A1512] rounded-lg flex items-center justify-center border border-white/5 select-none">
-            <span className="text-[11px] text-gray-500 tracking-wider font-mono">
-              Ad Space · 320×50 · Google AdSense
-            </span>
-          </div>
-        )}
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#000000]/95 backdrop-blur border-t border-white/5 py-2">
+      <div className="max-w-3xl mx-auto px-4 flex items-center justify-center overflow-x-auto">
+        {/* Live Adsterra 728x90 Banner */}
+        <div
+          ref={bannerRef}
+          className="min-w-[728px] h-[90px] overflow-hidden flex items-center justify-center"
+        />
       </div>
     </div>
   );
